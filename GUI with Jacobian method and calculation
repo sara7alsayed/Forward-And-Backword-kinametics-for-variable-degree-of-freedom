@@ -1,0 +1,378 @@
+function varargout = RRR_Robot(varargin)
+% RRR_ROBOT MATLAB code for RRR_Robot.fig
+%      RRR_ROBOT, by itself, creates a new RRR_ROBOT or raises the existing
+%      singleton*.
+%
+%      H = RRR_ROBOT returns the handle to a new RRR_ROBOT or the handle to
+%      the existing singleton*.
+%
+%      RRR_ROBOT('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in RRR_ROBOT.M with the given input arguments.
+%
+%      RRR_ROBOT('Property','Value',...) creates a new RRR_ROBOT or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before RRR_Robot_OpeningFcn gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to RRR_Robot_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Last Modified by GUIDE v2.5 30-Apr-2024 00:54:01
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @RRR_Robot_OpeningFcn, ...
+                   'gui_OutputFcn',  @RRR_Robot_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+% --- Executes just before RRR_Robot is made visible.
+function RRR_Robot_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to RRR_Robot (see VARARGIN)
+
+% Choose default command line output for RRR_Robot
+handles.output = hObject;
+
+% Prompt user for number of links
+prompt = {'Enter the number of links:'};
+dlgtitle = 'Number of Links';
+dims = [1 35];
+definput = {'3'}; % Default to 3 links
+num_links = str2double(inputdlg(prompt,dlgtitle,dims,definput));
+
+% Create Theta and Alpha UI elements dynamically based on num_links
+for i = 1:num_links
+    % Create Theta text boxes
+    handles.(['Theta_', num2str(i)]) = uicontrol('style', 'edit', 'units', 'normalized', ...
+        'position', [0.1 0.9-(i*0.1) 0.1 0.05], 'string', 'Theta', 'callback', @Theta_Callback);
+    % Create Alpha text boxes
+    handles.(['Alpha_', num2str(i)]) = uicontrol('style', 'edit', 'units', 'normalized', ...
+        'position', [0.3 0.9-(i*0.1) 0.1 0.05], 'string', 'Alpha', 'callback', @Alpha_Callback);
+    % Create Link Length text boxes
+    handles.(['Length_', num2str(i)]) = uicontrol('style', 'edit', 'units', 'normalized', ...
+        'position', [0.5 0.9-(i*0.1) 0.1 0.05], 'string', 'Length', 'callback', @Length_Callback);
+end
+
+% Store number of links in handles structure for later use
+handles.num_links = num_links;
+
+% Create text boxes for end effector position
+handles.Pos_X = uicontrol('style', 'edit', 'units', 'normalized', ...
+        'position', [0.4 0.9 0.1 0.05], 'string', 'X', 'callback', @Pos_X_Callback);
+handles.Pos_Y = uicontrol('style', 'edit', 'units', 'normalized', ...
+        'position', [0.6 0.9 0.1 0.05], 'string', 'Y', 'callback', @Pos_Y_Callback);
+handles.Pos_Z = uicontrol('style', 'edit', 'units', 'normalized', ...
+        'position', [0.8 0.9 0.1 0.05], 'string', 'Z', 'callback', @Pos_Z_Callback);
+
+
+% Update handles structure
+guidata(hObject, handles);
+
+% UIWAIT makes RRR_Robot wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = RRR_Robot_OutputFcn(hObject, eventdata, handles) 
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
+
+function Theta_Callback(hObject, eventdata, handles)
+% hObject    handle to the text box that called this callback (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of text box as text
+%        str2double(get(hObject,'String')) returns contents of text box as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Theta_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to the text box that will be created (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function Alpha_Callback(hObject, eventdata, handles)
+% hObject    handle to the text box that called this callback (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of text box as text
+%        str2double(get(hObject,'String')) returns contents of text box as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Alpha_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to the text box that will be created (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function Pos_X_Callback(hObject, eventdata, handles)
+% hObject    handle to Pos_X (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Pos_X as text
+%        str2double(get(hObject,'String')) returns contents of Pos_X as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Pos_X_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Pos_X (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function Pos_Y_Callback(hObject, eventdata, handles)
+% hObject    handle to Pos_Y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Pos_Y as text
+%        str2double(get(hObject,'String')) returns contents of Pos_Y as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Pos_Y_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Pos_Y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function Pos_Z_Callback(hObject, eventdata, handles)
+% hObject    handle to Pos_Z (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Pos_Z as text
+%        str2double(get(hObject,'String')) returns contents of Pos_Z as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Pos_Z_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Pos_Z (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% --- Executes on button press in btn_Forward.
+function btn_Forward_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_Forward (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Retrieve joint angles and alpha values from UI
+Th = zeros(1, handles.num_links); 
+Alpha = zeros(1, handles.num_links);
+L = zeros(1, handles.num_links);
+for i = 1:handles.num_links
+    Th(i) = str2double(handles.(['Theta_', num2str(i)]).String) * pi / 180;
+    Alpha(i) = str2double(handles.(['Alpha_', num2str(i)]).String) * pi / 180;
+    L(i) = str2double(handles.(['Length_', num2str(i)]).String);
+end
+
+% % Perform forward kinematics calculations
+
+
+% Initialize transformation matrix
+T = eye(4);
+link_points = zeros(handles.num_links + 1, 3);
+link_points(1, :) = [0, 0, 0]; % Base position
+
+% Calculate transformation matrix for each joint
+for i = 1:handles.num_links
+    A = [cos(Th(i)), -sin(Th(i))*cos(Alpha(i)), sin(Th(i))*sin(Alpha(i)), L(i)*cos(Th(i));
+         sin(Th(i)), cos(Th(i))*cos(Alpha(i)), -cos(Th(i))*sin(Alpha(i)), L(i)*sin(Th(i));
+         0, sin(Alpha(i)), cos(Alpha(i)), 0;
+         0, 0, 0, 1];
+    T = T * A;
+    link_points(i+1, :) = T(1:3, 4);
+end
+
+plot3(link_points(:, 1), link_points(:, 2), link_points(:, 3), 'bo-');
+% Extract end effector position from transformation matrix
+Pos = T(1:3, 4);
+
+% Update the text boxes with the calculated end effector position
+handles.Pos_X.String = num2str(Pos(1));
+handles.Pos_Y.String = num2str(Pos(2));
+handles.Pos_Z.String = num2str(Pos(3));
+
+% --- Executes on button press in btn_Inverse.
+function btn_Inverse_Callback(hObject, eventdata, handles)
+    % Retrieve end effector position, alpha values, and link lengths from UI
+    x_d = str2double(handles.Pos_X.String);
+    y_d = str2double(handles.Pos_Y.String);
+    z_d = str2double(handles.Pos_Z.String);
+    Alpha = zeros(1, handles.num_links);
+    L = zeros(1, handles.num_links);
+    for i = 1:handles.num_links
+        Alpha(i) = str2double(handles.(['Alpha_', num2str(i)]).String) * pi / 180;
+        L(i) = str2double(handles.(['Length_', num2str(i)]).String);
+    end
+
+    % Initial guess for joint angles (random values)
+    Th = rand(1, handles.num_links);
+
+    % Maximum number of iterations
+    max_iter = 100;
+    % Threshold for convergence
+    epsilon = 1e-6;
+
+    for iter = 1:max_iter
+        % Forward kinematics to calculate end effector position
+        [x, y, z] = calculate_end_effector_position(Th, Alpha, L);
+
+        % Error between desired and actual end effector position
+        error = norm([x_d - x, y_d - y, z_d - z]);
+
+        % If error is below threshold, break the loop
+        if error < epsilon
+            break;
+        end
+
+        % Calculate Jacobian matrix
+        J = calculate_jacobian(Th, Alpha, L, x, y, z);
+
+        % Pseudo-inverse of the Jacobian matrix
+        J_pseudo_inv = pinv(J);
+
+        % Desired change in end effector position
+        delta_x = [x_d - x; y_d - y; z_d - z];
+
+        % Adjust joint angles
+        delta_Th = J_pseudo_inv * delta_x;
+        Th = Th + delta_Th';
+    end
+
+    % Update UI with calculated joint angles
+    for i = 1:handles.num_links
+        handles.(['Theta_', num2str(i)]).String = num2str(Th(i) * 180 / pi);
+    end
+
+    % Plot the robot arm configuration
+    plot_robot_arm(Th, Alpha, L, handles);
+
+
+
+function plot_robot_arm(Th, Alpha, L, handles)
+    % Initialize transformation matrix
+    T = eye(4);
+
+    % Store points for plotting links
+    link_points = zeros(length(Th) + 1, 3);
+
+    % Calculate transformation matrix for each joint and store end points
+    link_points(1, :) = [0, 0, 0]; % Base position
+    for i = 1:length(Th)
+        A = [cos(Th(i)), -sin(Th(i))*cos(Alpha(i)), sin(Th(i))*sin(Alpha(i)), L(i)*cos(Th(i));
+             sin(Th(i)), cos(Th(i))*cos(Alpha(i)), -cos(Th(i))*sin(Alpha(i)), L(i)*sin(Th(i));
+             0, sin(Alpha(i)), cos(Alpha(i)), 0;
+             0, 0, 0, 1];
+        T = T * A;
+        link_points(i+1, :) = T(1:3, 4);
+    end
+
+    % Plot the robot arm
+    plot3(link_points(:, 1), link_points(:, 2), link_points(:, 3), '-o', 'LineWidth', 2, 'MarkerSize', 8);
+    grid on;
+    xlabel('X');
+    ylabel('Y');
+    zlabel('Z');
+    title('Robot Arm Configuration');
+    axis equal;
+
+
+function [x, y, z] = calculate_end_effector_position(Th, Alpha, L)
+    % Initialize transformation matrix
+    T = eye(4);
+
+    % Calculate transformation matrix for each joint
+    for i = 1:length(Th)
+        A = [cos(Th(i)), -sin(Th(i))*cos(Alpha(i)), sin(Th(i))*sin(Alpha(i)), L(i)*cos(Th(i));
+             sin(Th(i)), cos(Th(i))*cos(Alpha(i)), -cos(Th(i))*sin(Alpha(i)), L(i)*sin(Th(i));
+             0, sin(Alpha(i)), cos(Alpha(i)), 0;
+             0, 0, 0, 1];
+        T = T * A;
+    end
+
+    % Extract end effector position from transformation matrix
+    x = T(1, 4);
+    y = T(2, 4);
+    z = T(3, 4);
+
+
+function J = calculate_jacobian(Th, Alpha, L, x, y, z)
+    % Initialize Jacobian matrix
+    J = zeros(3, length(Th));
+
+    % Small angle for numerical differentiation
+    delta = 1e-6;
+
+    % Calculate numerical approximation of Jacobian matrix
+    for i = 1:length(Th)
+        % Perturb joint angle
+        Th_plus_delta = Th;
+        Th_plus_delta(i) = Th_plus_delta(i) + delta;
+
+        % Calculate end effector position with perturbed joint angle
+        [x_plus_delta, y_plus_delta, z_plus_delta] = calculate_end_effector_position(Th_plus_delta, Alpha, L);
+
+        % Calculate partial derivatives
+        J(:, i) = [(x_plus_delta - x) / delta;
+                   (y_plus_delta - y) / delta;
+                   (z_plus_delta - z) / delta];
+    end
